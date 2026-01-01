@@ -1,0 +1,409 @@
+/* If you are not using Tailwind, remove these lines. If you are, ensure your build tool (like PostCSS) is configured for Tailwind. */
+
+/* Your existing styles should remain here */
+
+/* Landing Page Specific Styles - Complete Updated Version */
+
+
+
+@layer base {
+  :root {
+    --taxi-yellow: #FFD700;
+    --taxi-orange: #FFA500;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-radial {
+    background: radial-gradient(ellipse at center, var(--tw-gradient-stops));
+  }
+}
+
+@layer components {
+  /* Landing Page Button Styles */
+  .landing-btn-primary {
+    background: linear-gradient(to right, #facc15, #fb923c);
+    color: #000;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    transition: all 0.3s;
+    backdrop-filter: blur(4px);
+  }
+  .landing-btn-primary:hover {
+    transform: translateY(-0.25rem);
+    box-shadow: 0 25px 50px -12px rgba(250, 202, 21, 0.5), 0 25px 50px -12px rgba(251, 146, 60, 0.5);
+  }
+
+  .landing-btn-secondary {
+    background: transparent;
+    color: #facc15;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    border: 2px solid #facc15;
+    border-radius: 9999px;
+    font-weight: 600;
+    transition: all 0.3s;
+    backdrop-filter: blur(4px);
+  }
+  .landing-btn-secondary:hover {
+    background: #facc15;
+    color: #000;
+    transform: translateY(-0.25rem);
+  }
+
+  /* Landing Page Card Styles */
+  .landing-card {
+    background: linear-gradient(135deg, #1f2937, #111827);
+    padding: 2rem;
+    border-radius: 1rem;
+    border: 1px solid #374151;
+    transition: all 0.3s;
+    backdrop-filter: blur(8px);
+  }
+  .landing-card:hover {
+    transform: translateY(-0.5rem);
+    border-color: #facc15;
+  }
+
+  /* Gradient Text */
+  .landing-gradient-text {
+    background: linear-gradient(to right, #facc15, #fb923c, #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Dashboard Zoom Effect */
+  .dashboard-zoom {
+    transition: transform 0.5s;
+    cursor: pointer;
+  }
+  .dashboard-zoom:hover {
+    transform: scale(1.05);
+  }
+
+  /* Feature Card Animation */
+  .feature-card {
+    transition: all 0.7s;
+  }
+
+  /* Testimonial Card Animation */
+  .testimonial-card {
+    transition: all 0.7s;
+  }
+
+  /* Galaxy interaction hint */
+  .galaxy-interaction-hint {
+    opacity: 0.6;
+    animation: pulseGlow 3s infinite;
+  }
+}
+
+/* Custom Animations for Landing Page */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  25% {
+    transform: translateY(-10px) translateX(5px);
+  }
+  50% {
+    transform: translateY(0px) translateX(-5px);
+  }
+  75% {
+    transform: translateY(10px) translateX(3px);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(255, 212, 0, 0.3);
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 30px rgba(255, 212, 0, 0.5);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+/* Custom utility classes */
+.animate-fadeInUp {
+  animation: fadeInUp 1s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s infinite;
+}
+
+.animate-slide-up {
+  animation: slideUp 1s ease-out forwards;
+}
+
+.animate-zoom-in {
+  animation: zoomIn 0.5s ease-out forwards;
+}
+
+/* Landing page specific overrides */
+.landing-page {
+  background: #000;
+  color: #fff;
+}
+
+/* Custom scrollbar for landing page */
+.landing-page::-webkit-scrollbar {
+  width: 8px;
+}
+
+.landing-page::-webkit-scrollbar-track {
+  background: #111;
+}
+
+.landing-page::-webkit-scrollbar-thumb {
+  background: #FFD700;
+  border-radius: 4px;
+}
+
+.landing-page::-webkit-scrollbar-thumb:hover {
+  background: #FFA500;
+}
+
+/* Responsive text sizes for landing page */
+@media (max-width: 640px) {
+  .landing-hero-title {
+    font-size: 2.5rem;
+    line-height: 1.1;
+  }
+  
+  .landing-section-title {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+
+  .landing-btn-primary,
+  .landing-btn-secondary {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 767px) {
+  .landing-hero-title {
+    font-size: 3.5rem;
+    line-height: 1.1;
+  }
+  
+  .landing-section-title {
+    font-size: 2.5rem;
+    line-height: 1.2;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .landing-hero-title {
+    font-size: 4rem;
+    line-height: 1.1;
+  }
+  
+  .landing-section-title {
+    font-size: 3rem;
+    line-height: 1.2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .landing-hero-title {
+    font-size: 5rem;
+    line-height: 1.1;
+  }
+  
+  .landing-section-title {
+    font-size: 4rem;
+    line-height: 1.2;
+  }
+}
+
+/* High-resolution displays */
+@media (min-width: 1440px) {
+  .landing-hero-title {
+    font-size: 6rem;
+  }
+  
+  .landing-section-title {
+    font-size: 4.5rem;
+  }
+}
+
+/* Dark mode enhancements for landing page */
+@media (prefers-color-scheme: dark) {
+  .landing-page {
+    background: #000;
+    color: #fff;
+  }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeInUp,
+  .animate-float,
+  .animate-pulse-glow,
+  .animate-slide-up,
+  .animate-zoom-in {
+    animation: none;
+  }
+  
+  .landing-card:hover,
+  .landing-btn-primary:hover,
+  .landing-btn-secondary:hover {
+    transform: none;
+  }
+  
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Print styles for landing page */
+@media print {
+  .landing-page {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .animate-fadeInUp,
+  .animate-float,
+  .animate-pulse-glow,
+  .animate-slide-up,
+  .animate-zoom-in {
+    animation: none;
+  }
+}
+
+/* Focus styles for accessibility */
+.landing-btn-primary:focus,
+.landing-btn-secondary:focus {
+  outline: 2px solid #FFD700;
+  outline-offset: 2px;
+}
+
+/* Selection colors */
+::selection {
+  background: #FFD700;
+  color: #000;
+}
+
+::-moz-selection {
+  background: #FFD700;
+  color: #000;
+}
+
+/* Custom Shine Animation */
+@keyframes shine {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shine-text {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(255, 255, 255, 0.8) 50%,
+    transparent 60%,
+    transparent 100%
+  ),
+  linear-gradient(90deg, currentColor 0%, currentColor 100%);
+  background-size: 200% 100%, 100% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: shine 3s ease-in-out infinite;
+  animation-delay: 0s;
+}
+
+.shine-text-delayed {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(255, 255, 255, 0.8) 50%,
+    transparent 60%,
+    transparent 100%
+  ),
+  linear-gradient(90deg, currentColor 0%, currentColor 100%);
+  background-size: 200% 100%, 100% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: shine 3s ease-in-out infinite;
+  animation-delay: 0s; /* Same timing for simultaneous effect */
+}
+
+@font-face {
+font-family: "Archivo";
+src: url("/fonts/archivo/Archivo-VariableFont_wdth,wght.ttf") format("truetype");
+font-weight: 100 900;
+font-stretch: 75% 125%;
+font-style: normal;
+font-display: swap;
+}
+
+/* Variable font (italic) */
+@font-face {
+font-family: "Archivo";
+src: url("/fonts/archivo/Archivo-Italic-VariableFont_wdth,wght.ttf") format("truetype");
+font-weight: 100 900;
+font-stretch: 75% 125%;
+font-style: italic;
+font-display: swap;
+}
