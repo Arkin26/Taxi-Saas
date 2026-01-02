@@ -9,9 +9,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true, // 🚫 do not block builds on lint errors
-  },
+  // eslint config removed - no longer supported in Next.js 16
+  // ESLint will still run via `npm run lint` or in your IDE
+  
   typescript: {
     ignoreBuildErrors: false, // ✅ still fail on real TS errors
   },
