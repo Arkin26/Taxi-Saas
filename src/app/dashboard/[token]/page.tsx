@@ -276,7 +276,7 @@ export default function DashboardPage() {
           </button>
         </div>
         {/* Render the driver form */}
-        <DriverDetailsForm />
+        <DriverDetailsForm taxiId={token as string} />
       </div>
     );
   }
@@ -547,3 +547,195 @@ export default function DashboardPage() {
     </>
   );
 }
+
+// "use client";
+
+// import React, { useEffect, useState, useRef } from "react";
+// import { useParams, useRouter } from "next/navigation";
+// import { Car, Users, Wrench, DollarSign, Plus, UserPlus, ArrowLeft } from "lucide-react";
+
+// import DriverDetailsForm from "./sidebar-pages/driver";
+// import CabDetailsForm from "./sidebar-pages/cab";
+
+// export default function DashboardPage() {
+//   const { token } = useParams();
+//   const router = useRouter();
+
+//   const [isAllowed, setIsAllowed] = useState(false);
+//   const [isLoading, setIsLoading] = useState(true);
+//   const [currentPage, setCurrentPage] = useState<"dashboard" | "driver" | "cab">("dashboard");
+
+//   const gridRef = useRef<HTMLDivElement>(null!);
+
+//   useEffect(() => {
+//     const fromLogin = sessionStorage.getItem("fromLogin");
+//     const storedToken = sessionStorage.getItem("loginToken");
+
+//     if (fromLogin === "true" || storedToken === token) {
+//       setIsAllowed(true);
+//       if (fromLogin === "true") {
+//         sessionStorage.removeItem("fromLogin");
+//       }
+//     } else {
+//       setTimeout(() => router.replace("/"), 3000);
+//     }
+
+//     setIsLoading(false);
+//   }, [token, router]);
+
+//   if (isLoading) {
+//     return <div className="flex items-center justify-center min-h-screen">Checking authentication…</div>;
+//   }
+
+//   if (!isAllowed) {
+//     return (
+//       <div className="flex items-center justify-center min-h-screen">
+//         <p>Access denied. Redirecting…</p>
+//       </div>
+//     );
+//   }
+
+//   /* ================= DRIVER PAGE ================= */
+//   if (currentPage === "driver") {
+//     return (
+//       <div>
+//         <button
+//           onClick={() => setCurrentPage("dashboard")}
+//           className="flex items-center gap-2 text-blue-600 mb-6"
+//         >
+//           <ArrowLeft className="w-4 h-4" />
+//           Back to Dashboard
+//         </button>
+
+//         <DriverDetailsForm taxiId={token as string} />
+//       </div>
+//     );
+//   }
+
+//   /* ================= CAB PAGE ================= */
+//   if (currentPage === "cab") {
+//     return (
+//       <div>
+//         <button
+//           onClick={() => setCurrentPage("dashboard")}
+//           className="flex items-center gap-2 text-blue-600 mb-6"
+//         >
+//           <ArrowLeft className="w-4 h-4" />
+//           Back to Dashboard
+//         </button>
+
+//         <CabDetailsForm />
+//       </div>
+//     );
+//   }
+
+//   /* ================= DASHBOARD ================= */
+//   return (
+//     <div className="space-y-6">
+//       {/* Header */}
+//       <div className="mb-8">
+//         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+//         <p className="text-gray-600 mt-2">Welcome to your taxi management dashboard</p>
+//       </div>
+
+//       {/* Stats Cards */}
+//       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+//         <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+//           <div className="flex items-center justify-between">
+//             <div>
+//               <p className="text-gray-600 text-sm">Total Cabs</p>
+//               <p className="text-3xl font-bold text-gray-900 mt-2">24</p>
+//             </div>
+//             <Car className="w-12 h-12 text-blue-500" />
+//           </div>
+//         </div>
+
+//         <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+//           <div className="flex items-center justify-between">
+//             <div>
+//               <p className="text-gray-600 text-sm">Active Drivers</p>
+//               <p className="text-3xl font-bold text-gray-900 mt-2">18</p>
+//             </div>
+//             <Users className="w-12 h-12 text-green-500" />
+//           </div>
+//         </div>
+
+//         <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+//           <div className="flex items-center justify-between">
+//             <div>
+//               <p className="text-gray-600 text-sm">Maintenance</p>
+//               <p className="text-3xl font-bold text-gray-900 mt-2">3</p>
+//             </div>
+//             <Wrench className="w-12 h-12 text-orange-500" />
+//           </div>
+//         </div>
+
+//         <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+//           <div className="flex items-center justify-between">
+//             <div>
+//               <p className="text-gray-600 text-sm">Revenue Today</p>
+//               <p className="text-3xl font-bold text-gray-900 mt-2">₹12.5k</p>
+//             </div>
+//             <DollarSign className="w-12 h-12 text-purple-500" />
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Quick Actions */}
+//       <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+//         <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+//         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//           <button
+//             onClick={() => setCurrentPage("driver")}
+//             className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all"
+//           >
+//             <UserPlus className="w-6 h-6 text-blue-500" />
+//             <div className="text-left">
+//               <p className="font-semibold text-gray-900">Add Driver</p>
+//               <p className="text-sm text-gray-600">Register a new driver</p>
+//             </div>
+//           </button>
+
+//           <button
+//             onClick={() => setCurrentPage("cab")}
+//             className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all"
+//           >
+//             <Plus className="w-6 h-6 text-green-500" />
+//             <div className="text-left">
+//               <p className="font-semibold text-gray-900">Add Cab</p>
+//               <p className="text-sm text-gray-600">Register a new vehicle</p>
+//             </div>
+//           </button>
+//         </div>
+//       </div>
+
+//       {/* Recent Activity */}
+//       <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+//         <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+//         <div className="space-y-3">
+//           <div className="flex items-center justify-between py-3 border-b border-gray-100">
+//             <div>
+//               <p className="font-medium text-gray-900">Rajesh Kumar - Ride Completed</p>
+//               <p className="text-sm text-gray-600">Airport to Mall • ₹250</p>
+//             </div>
+//             <span className="text-sm text-gray-500">2 mins ago</span>
+//           </div>
+//           <div className="flex items-center justify-between py-3 border-b border-gray-100">
+//             <div>
+//               <p className="font-medium text-gray-900">Amit Sharma - Ride Started</p>
+//               <p className="text-sm text-gray-600">Station to Home • ₹180</p>
+//             </div>
+//             <span className="text-sm text-gray-500">15 mins ago</span>
+//           </div>
+//           <div className="flex items-center justify-between py-3">
+//             <div>
+//               <p className="font-medium text-gray-900">Priya Singh - Payment Received</p>
+//               <p className="text-sm text-gray-600">Weekly settlement • ₹4,500</p>
+//             </div>
+//             <span className="text-sm text-gray-500">1 hour ago</span>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }

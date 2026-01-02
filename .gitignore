@@ -39,3 +39,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# the commented codes of routes is the one we had for the working version , the normal code is for the deployemnt of vercel from GPT

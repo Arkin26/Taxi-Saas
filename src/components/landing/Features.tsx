@@ -1,46 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-// You'll need to install gsap: npm install gsap
-// Uncomment the lines below when you have GSAP installed
-// import { gsap } from "gsap";
-// import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-// Mock GSAP for demo (remove when using real GSAP)
-const gsap = {
-  registerPlugin: () => {},
-  set: (elements: any, vars: any) => {
-    const elementsArray = Array.isArray(elements) ? elements : [elements];
-    elementsArray.forEach((el: any) => {
-      if (el) {
-        if (vars.y !== undefined) el.style.transform = `translateY(${vars.y}px)`;
-        if (vars.opacity !== undefined) el.style.opacity = vars.opacity;
-      }
-    });
-  },
-  to: (elements: any, vars: any) => {
-    const elementsArray = Array.isArray(elements) ? elements : [elements];
-    setTimeout(() => {
-      elementsArray.forEach((el: any, index: number) => {
-        if (el) {
-          const delay = (vars.stagger?.amount || 0) * index;
-          setTimeout(() => {
-            el.style.transform = 'translateY(0px)';
-            el.style.opacity = '1';
-            el.style.transition = `all ${vars.duration || 1}s ease-out`;
-          }, delay * 1000);
-        }
-      });
-    }, 100);
-    return { scrollTrigger: {} };
-  }
-};
-
-const ScrollTrigger = {
-  create: () => {},
-  refresh: () => {},
-  getAll: () => [] // Fixed: Added getAll method that returns empty array
-};
+import React, { useEffect, useRef, useState } from "react";
 
 type FeatureItem = {
   title: string;
@@ -235,93 +195,40 @@ const items: FeatureItem[] = [
 ];
 
 const Feature: React.FC = () => {
+  const [mounted, setMounted] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const boxRefs = useRef<(HTMLElement | null)[]>([]);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Register ScrollTrigger plugin
-    gsap.registerPlugin();
-
-    // Set initial states - all elements start below and invisible
-    gsap.set(headerRef.current, { y: 50, opacity: 0 });
-    gsap.set(boxRefs.current, { y: 80, opacity: 0 });
-
-    // Animate header first
-    gsap.to(headerRef.current, {
-      y: 0,
-      opacity: 1,
-      duration: 0.8,
-      ease: "power3.out",
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top 80%",
-        toggleActions: "play none none reverse"
-      }
-    });
-
-    // Animate boxes with stagger effect (left to right, row by row)
-    gsap.to(boxRefs.current, {
-      y: 0,
-      opacity: 1,
-      duration: 0.6,
-      ease: "power3.out",
-      
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top 70%",
-        toggleActions: "play none none reverse"
-      }
-    });
-
-    /* Real GSAP implementation (uncomment when GSAP is installed):
-    
-    // Register ScrollTrigger plugin
-    gsap.registerPlugin(ScrollTrigger);
-
-    // Set initial states
-    gsap.set(headerRef.current, { y: 50, opacity: 0 });
-    gsap.set(boxRefs.current, { y: 80, opacity: 0 });
-
-    // Header animation
-    gsap.to(headerRef.current, {
-      y: 0,
-      opacity: 1,
-      duration: 0.8,
-      ease: "power3.out",
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top 80%",
-        end: "bottom 20%",
-        toggleActions: "play none none reverse"
-      }
-    });
-
-    // Staggered box animations
-    gsap.to(boxRefs.current, {
-      y: 0,
-      opacity: 1,
-      duration: 0.6,
-      ease: "power3.out",
-      stagger: {
-        amount: 0.8,
-        from: "start"
-      },
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top 70%",
-        end: "bottom 20%",
-        toggleActions: "play none none reverse"
-      }
-    });
-
-    // Cleanup - Fixed: Removed argument from getAll()
-    return () => {
-      ScrollTrigger.getAll().forEach((trigger: any) => trigger.kill());
-    };
-    */
-
+    setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, [mounted]);
 
   return (
     <section
@@ -333,7 +240,12 @@ const Feature: React.FC = () => {
       className="w-full min-h-fit py-10"
     >
       <div className="mx-auto max-w-7xl px-6 py-16">
-        <header ref={headerRef} className="mb-10">
+        <header 
+          ref={headerRef} 
+          className={`mb-10 transition-all duration-800 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+          }`}
+        >
           <h2
             style={{
               fontFamily:
@@ -374,25 +286,21 @@ const Feature: React.FC = () => {
                 key={i}
                 ref={(el) => {
                   boxRefs.current[i] = el;
-                }} // Fixed: Proper ref callback without return value
+                }}
                 className={[
-                  "p-6 flex flex-col justify-start transition-all duration-300 hover:bg-black/20 group cursor-pointer",
-                  // draw right borders on all but last col in each row
+                  "p-6 flex flex-col justify-start transition-all duration-600 hover:bg-black/20 group cursor-pointer",
                   "border-gray-600/50",
                   "sm:[&:not(:nth-child(2n))]:border-r",
                   "lg:[&:not(:nth-child(4n))]:border-r",
-                  // draw bottom borders on all but last row
-                  // for 8 items: items 1-4 have bottom border on lg, 1-2 on sm, all but last on mobile
                   "border-b",
-                  // remove bottom border for last row on lg (items 5-8)
                   "lg:[&:nth-last-child(-n+4)]:border-b-0",
-                  // remove bottom border for last row on sm (items 7-8)
                   "sm:[&:nth-last-child(-n+2)]:border-b-0",
-                  // remove bottom border for last item on mobile
                   "[&:last-child]:border-b-0",
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
                 ].join(" ")}
                 style={{
                   background: "transparent",
+                  transitionDelay: `${i * 100}ms`
                 }}
               >
                 <div

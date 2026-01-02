@@ -88,30 +88,32 @@ export default function DashboardLayout({
   children: React.ReactNode;
   params: Promise<{ token: string }>;
 }) {
-  // Unwrap the async params
-  const resolvedParams = React.use(params);
-
-  // Token state initialized from params
-  const [token, setToken] = useState<string | null>(
-    () => resolvedParams?.token ?? null
-  );
-
-  // Auth check state: null = loading, true = allowed, false = blocked
+  const [mounted, setMounted] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
   const [isAllowed, setIsAllowed] = useState<boolean | null>(null);
 
   const router = useRouter();
   const pathname = usePathname();
 
-  // Update token if params changes
+  // Wait for component to mount
   useEffect(() => {
-    if (resolvedParams?.token) {
-      setToken(resolvedParams.token);
-    }
-  }, [resolvedParams]);
+    setMounted(true);
+  }, []);
+
+  // Unwrap params only after mounting
+  useEffect(() => {
+    if (!mounted) return;
+    
+    params.then((resolvedParams) => {
+      if (resolvedParams?.token) {
+        setToken(resolvedParams.token);
+      }
+    });
+  }, [mounted, params]);
 
   // Authentication check on mount & token change
   useEffect(() => {
-    if (!token) return;
+    if (!mounted || !token) return;
 
     const fromLogin = sessionStorage.getItem("fromLogin");
     const storedToken = sessionStorage.getItem("loginToken");
@@ -123,23 +125,24 @@ export default function DashboardLayout({
       if (fromLogin === "true") sessionStorage.removeItem("fromLogin");
     } else {
       setIsAllowed(false);
-      router.replace("/home"); // redirect unauthorized users to /home
+      router.replace("/"); // redirect unauthorized users to home
     }
-  }, [token, router]);
+  }, [mounted, token, router]);
 
   // Handle initial view for sidebar navigation
   const initialView = () => {
+    if (!pathname) return "dashboard";
     const parts = pathname.split("/").filter(Boolean);
     return parts.length > 2 ? parts.at(-1)! : "dashboard";
   };
 
   const [activeView, setActiveView] = useState(initialView);
 
-  // Show loader while checking auth or token resolving
-  if (!token || isAllowed === null) {
+  // Show loader while mounting, checking auth, or token resolving
+  if (!mounted || !token || isAllowed === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        Loading…
+        <div className="text-gray-600">Loading…</div>
       </div>
     );
   }
