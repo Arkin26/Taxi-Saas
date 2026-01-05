@@ -2,12 +2,12 @@
   "name": "taxiwaala",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
+ "scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint"
+},
   "dependencies": {
     "@appletosolutions/reactbits": "^1.0.3",
     "@headlessui/react": "^2.2.4",

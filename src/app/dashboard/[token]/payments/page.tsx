@@ -497,9 +497,15 @@ const PaymentsPage = () => {
   const [filter, setFilter] = useState<'all' | 'advance' | 'final'>('all');
   const [searchClient, setSearchClient] = useState('');
 
-  useEffect(() => {
+  // Add debounced search
+useEffect(() => {
+  // Don't fetch on every keystroke - use a debounce
+  const timeoutId = setTimeout(() => {
     fetchAllPayments();
-  }, [token, filter, searchClient]);
+  }, 500); // Wait 500ms after user stops typing
+
+  return () => clearTimeout(timeoutId);
+}, [token, filter, searchClient]);
 
   const fetchAllPayments = async () => {
     try {
@@ -685,7 +691,7 @@ const PaymentsPage = () => {
             placeholder="Search by customer name..."
             value={searchClient}
             onChange={(e) => setSearchClient(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="text-black w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
         

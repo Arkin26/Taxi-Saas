@@ -1,7 +1,7 @@
 
 // 'use client';
 // import React, { useEffect, useState } from 'react';
-// import { Car, Hash, Loader2, User, X, MapPin, Calendar, CreditCard, Edit3, Save, History, CheckCircle, StopCircle, AlertTriangle } from 'lucide-react';
+// import { Car, Hash, Loader2, User, X, MapPin, Calendar, CreditCard, History, CheckCircle, StopCircle, AlertTriangle } from 'lucide-react';
 
 // type Booking = {
 //   _id: string;
@@ -19,16 +19,6 @@
 //   totalAmount: number;
 //   advancePayment: number;
 //   duePayment: number;
-// };
-
-// type PaymentForm = {
-//   amountPaid: number;
-//   paymentMethod: 'CASH' | 'CARD' | 'UPI' | 'NET_BANKING' | 'OTHER';
-//   receivedBy: string;
-//   paymentType: 'ADVANCE' | 'PARTIAL' | 'FINAL' | 'REFUND';
-//   paymentDate: string;
-//   paymentTime: string;
-//   notes: string;
 // };
 
 // type Payment = {
@@ -49,35 +39,26 @@
 //   createdAt: string;
 // };
 
+// type FinalPaymentForm = {
+//   isPaymentReceived: boolean;
+//   paymentMethod: 'CASH' | 'CARD' | 'UPI' | 'NET_BANKING' | 'OTHER';
+//   receivedBy: string;
+// };
+
 // export default function CurrentBookings() {
 //   const [bookings, setBookings] = useState<Booking[]>([]);
 //   const [payments, setPayments] = useState<Payment[]>([]);
 //   const [loading, setLoading] = useState(true);
-//   const [paymentLoading, setPaymentLoading] = useState(false);
 //   const [endRideLoading, setEndRideLoading] = useState(false);
 //   const [error, setError] = useState('');
 //   const [modal, setModal] = useState<Booking | null>(null);
-//   const [showPaymentForm, setShowPaymentForm] = useState(false);
 //   const [showPaymentHistory, setShowPaymentHistory] = useState(false);
-//   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  
-//   // Initialize with current date and time
-//   const getCurrentDate = () => {
-//     return new Date().toISOString().split('T')[0];
-//   };
-  
-//   const getCurrentTime = () => {
-//     return new Date().toTimeString().slice(0, 5);
-//   };
+//   const [showEndRideDialog, setShowEndRideDialog] = useState(false);
 
-//   const [paymentForm, setPaymentForm] = useState<PaymentForm>({
-//     amountPaid: 0,
+//   const [finalPaymentForm, setFinalPaymentForm] = useState<FinalPaymentForm>({
+//     isPaymentReceived: false,
 //     paymentMethod: 'CASH',
-//     receivedBy: '',
-//     paymentType: 'PARTIAL',
-//     paymentDate: getCurrentDate(),
-//     paymentTime: getCurrentTime(),
-//     notes: ''
+//     receivedBy: ''
 //   });
 
 //   // Fetch bookings
@@ -115,133 +96,105 @@
 //     }
 //   };
 
-//   const handlePaymentFormSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
+//   const handleEndRideClick = () => {
+//     if (!modal) return;
+    
+//     // Reset the final payment form
+//     setFinalPaymentForm({
+//       isPaymentReceived: modal.duePayment > 0 ? false : true, // If no due payment, mark as received
+//       paymentMethod: 'CASH',
+//       receivedBy: ''
+//     });
+    
+//     setShowEndRideDialog(true);
+//   };
+
+//   const handleConfirmEndRide = async () => {
 //     if (!modal) return;
 
-//     setPaymentLoading(true);
+//     setEndRideLoading(true);
+    
 //     try {
-//       const paymentData = {
+//       // If there's a due payment and it was received, record it first
+//       if (modal.duePayment > 0 && finalPaymentForm.isPaymentReceived) {
+//         console.log('Recording final payment before ending ride...');
+        
+//         const finalPaymentData = {
+//           bookingId: modal.bookingId,
+//           finalPaymentAmount: modal.duePayment,
+//           paymentMethod: finalPaymentForm.paymentMethod,
+//           receivedBy: finalPaymentForm.receivedBy,
+//           isRideCompletion: true
+//         };
+
+//         const paymentRes = await fetch('/api/payments', {
+//           method: 'POST',
+//           headers: { 'Content-Type': 'application/json' },
+//           body: JSON.stringify(finalPaymentData)
+//         });
+
+//         if (!paymentRes.ok) {
+//           const paymentError = await paymentRes.json();
+//           throw new Error(paymentError.error || 'Failed to record final payment');
+//         }
+
+//         console.log('Final payment recorded successfully');
+//       }
+
+//       // Now end the ride
+//       const requestData = {
 //         bookingId: modal.bookingId,
-//         amountPaid: paymentForm.amountPaid,
-//         paymentMethod: paymentForm.paymentMethod,
-//         receivedBy: paymentForm.receivedBy,
-//         paymentType: paymentForm.paymentType,
-//         paymentDate: paymentForm.paymentDate,
-//         paymentTime: paymentForm.paymentTime,
-//         notes: paymentForm.notes,
-//         totalBookingAmount: modal.totalAmount,
-//         paymentSequence: payments.length + 1,
-//         remainingAmount: modal.duePayment - paymentForm.amountPaid
+//         driverId: modal.driverId,
+//         cabId: modal.cabId,
+//         finalPaymentStatus: modal.duePayment > 0 ? 
+//           (finalPaymentForm.isPaymentReceived ? 'COMPLETED' : 'PENDING') : 'COMPLETED'
 //       };
 
-//       const res = await fetch('/api/payments', {
+//       console.log('Ending ride with data:', requestData);
+
+//       const res = await fetch('/api/end-ride', {
 //         method: 'POST',
 //         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify(paymentData)
+//         body: JSON.stringify(requestData)
 //       });
 
 //       const data = await res.json();
       
 //       if (data.success) {
-//         // Update booking's due payment
-//         const updatedBookings = bookings.map(b => 
-//           b.bookingId === modal.bookingId 
-//             ? { ...b, duePayment: paymentData.remainingAmount }
-//             : b
-//         );
+//         // Remove the booking from the list
+//         const updatedBookings = bookings.filter(b => b.bookingId !== modal.bookingId);
 //         setBookings(updatedBookings);
         
-//         // Update modal data
-//         setModal(prev => prev ? { ...prev, duePayment: paymentData.remainingAmount } : null);
+//         const paymentMessage = modal.duePayment > 0 ? 
+//           (finalPaymentForm.isPaymentReceived ? 
+//             ' Final payment recorded.' : 
+//             ' Payment marked as pending.') : '';
         
-//         // Refresh payment history
-//         await fetchPaymentHistory(modal.bookingId);
-        
-//         alert('Payment recorded successfully!');
-//         setShowPaymentForm(false);
-//         resetPaymentForm();
+//         alert(`Ride ended successfully!${paymentMessage} Driver and cab are now available.`);
+//         handleModalClose();
 //       } else {
-//         alert(data.error || 'Failed to record payment');
+//         console.error('End ride failed:', data);
+//         alert(`Failed to end ride: ${data.error || 'Unknown error'}`);
 //       }
 //     } catch (error) {
-//       alert('Network error occurred');
-//       console.error('Payment submission error:', error);
+//       console.error('End ride error:', error);
+//       alert(`Error: ${error instanceof Error ? error.message : 'Network error occurred'}`);
 //     } finally {
-//       setPaymentLoading(false);
+//       setEndRideLoading(false);
+//       setShowEndRideDialog(false);
 //     }
-//   };
-
-//   const handleEndRideClick = () => {
-//     setShowConfirmDialog(true);
-//   };
-
-//   const handleConfirmEndRide = async () => {
-//   if (!modal) return;
-
-//   setEndRideLoading(true);
-//   setShowConfirmDialog(false);
-  
-//   try {
-//     const requestData = {
-//       bookingId: modal.bookingId,
-//       driverId: modal.driverId,
-//       cabId: modal.cabId
-//     };
-
-//     console.log('Sending end ride request with data:', requestData);
-
-//     const res = await fetch('/api/end-ride', {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify(requestData)
-//     });
-
-//     console.log('Response status:', res.status);
-//     console.log('Response headers:', res.headers);
-
-//     const data = await res.json();
-//     console.log('Response data:', data);
-    
-//     if (data.success) {
-//       // Remove the booking from the list
-//       const updatedBookings = bookings.filter(b => b.bookingId !== modal.bookingId);
-//       setBookings(updatedBookings);
-      
-//       alert('Ride ended successfully! Driver and cab are now available.');
-//       handleModalClose();
-//     } else {
-//       console.error('End ride failed:', data);
-//       alert(`Failed to end ride: ${data.error || 'Unknown error'}`);
-//     }
-//   } catch (error) {
-//     console.error('End ride error:', error);
-//     alert('Network error occurred while ending ride');
-//   } finally {
-//     setEndRideLoading(false);
-//   }
-// };
-
-
-//   const resetPaymentForm = () => {
-//     setPaymentForm({
-//       amountPaid: 0,
-//       paymentMethod: 'CASH',
-//       receivedBy: '',
-//       paymentType: 'PARTIAL',
-//       paymentDate: getCurrentDate(),
-//       paymentTime: getCurrentTime(),
-//       notes: ''
-//     });
 //   };
 
 //   const handleModalClose = () => {
 //     setModal(null);
-//     setShowPaymentForm(false);
 //     setShowPaymentHistory(false);
-//     setShowConfirmDialog(false);
-//     resetPaymentForm();
+//     setShowEndRideDialog(false);
 //     setPayments([]);
+//     setFinalPaymentForm({
+//       isPaymentReceived: false,
+//       paymentMethod: 'CASH',
+//       receivedBy: ''
+//     });
 //   };
 
 //   const getPaymentTypeColor = (type: string) => {
@@ -347,7 +300,7 @@
 //               <p className="text-blue-600 font-medium">#{modal.bookingId}</p>
 //             </div>
 
-//             {!showPaymentForm && !showPaymentHistory ? (
+//             {!showPaymentHistory ? (
 //               <>
 //                 {/* Vehicle Information */}
 //                 <div className="mb-6">
@@ -453,48 +406,29 @@
 
 //                 {/* Action Buttons */}
 //                 <div className="flex justify-between space-x-3">
-//                   <div className="flex space-x-3">
-//                     <button
-//                       onClick={() => setShowPaymentHistory(true)}
-//                       className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg flex items-center transition-colors"
-//                     >
-//                       <History className="w-4 h-4 mr-2" />
-//                       Payment History ({payments.length})
-//                     </button>
-                    
-//                     <button
-//                       onClick={handleEndRideClick}
-//                       disabled={endRideLoading}
-//                       className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-6 py-2 rounded-lg flex items-center transition-colors"
-//                     >
-//                       {endRideLoading ? (
-//                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-//                       ) : (
-//                         <StopCircle className="w-4 h-4 mr-2" />
-//                       )}
-//                       {endRideLoading ? 'Ending...' : 'End Ride'}
-//                     </button>
-//                   </div>
+//                   <button
+//                     onClick={() => setShowPaymentHistory(true)}
+//                     className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg flex items-center transition-colors"
+//                   >
+//                     <History className="w-4 h-4 mr-2" />
+//                     Payment History ({payments.length})
+//                   </button>
                   
-//                   {modal.duePayment > 0 && (
-//                     <button
-//                       onClick={() => {
-//                         setShowPaymentForm(true);
-//                         setPaymentForm(prev => ({ 
-//                           ...prev, 
-//                           amountPaid: modal.duePayment,
-//                           paymentType: modal.duePayment === modal.totalAmount ? 'FINAL' : 'PARTIAL'
-//                         }));
-//                       }}
-//                       className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center transition-colors"
-//                     >
-//                       <Edit3 className="w-4 h-4 mr-2" />
-//                       Record Payment
-//                     </button>
-//                   )}
+//                   <button
+//                     onClick={handleEndRideClick}
+//                     disabled={endRideLoading}
+//                     className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-6 py-2 rounded-lg flex items-center transition-colors"
+//                   >
+//                     {endRideLoading ? (
+//                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                     ) : (
+//                       <StopCircle className="w-4 h-4 mr-2" />
+//                     )}
+//                     {endRideLoading ? 'Ending...' : 'End Ride'}
+//                   </button>
 //                 </div>
 //               </>
-//             ) : showPaymentHistory ? (
+//             ) : (
 //               /* Payment History */
 //               <div>
 //                 <h3 className="text-xl font-semibold text-black mb-4 flex items-center">
@@ -573,222 +507,119 @@
 //                   </button>
 //                 </div>
 //               </div>
-//             ) : (
-//               /* Payment Form */
-//               <div>
-//                 <h3 className="text-xl font-semibold text-black mb-4 flex items-center">
-//                   <CreditCard className="w-5 h-5 mr-2 text-blue-600" />
-//                   Record Payment
-//                 </h3>
-
-//                 <form onSubmit={handlePaymentFormSubmit} className="space-y-6">
-//                   {/* Payment Amount */}
-//                   <div>
-//                     <label className="block text-sm font-medium text-gray-700 mb-2">
-//                       Payment Amount (₹) *
-//                     </label>
-//                     <input
-//                       type="number"
-//                       min="0"
-//                       max={modal.duePayment}
-//                       step="0.01"
-//                       value={paymentForm.amountPaid}
-//                       onChange={(e) => setPaymentForm(prev => ({ 
-//                         ...prev, 
-//                         amountPaid: parseFloat(e.target.value) || 0 
-//                       }))}
-//                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//                       placeholder="0.00"
-//                       required
-//                     />
-//                     <p className="text-xs text-gray-500 mt-1">
-//                       Due amount: ₹{modal.duePayment.toFixed(2)}
-//                     </p>
-//                   </div>
-
-//                   {/* Payment Method */}
-//                   <div>
-//                     <label className="block text-sm font-medium text-gray-700 mb-2">
-//                       Payment Method *
-//                     </label>
-//                     <select
-//                       value={paymentForm.paymentMethod}
-//                       onChange={(e) => setPaymentForm(prev => ({ 
-//                         ...prev, 
-//                         paymentMethod: e.target.value as PaymentForm['paymentMethod']
-//                       }))}
-//                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//                       required
-//                     >
-//                       <option value="CASH">Cash</option>
-//                       <option value="CARD">Card</option>
-//                       <option value="UPI">UPI</option>
-//                       <option value="NET_BANKING">Net Banking</option>
-//                       <option value="OTHER">Other</option>
-//                     </select>
-//                   </div>
-
-//                   {/* Received By */}
-//                   <div>
-//                     <label className="block text-sm font-medium text-gray-700 mb-2">
-//                       Received By *
-//                     </label>
-//                     <input
-//                       type="text"
-//                       value={paymentForm.receivedBy}
-//                       onChange={(e) => setPaymentForm(prev => ({ 
-//                         ...prev, 
-//                         receivedBy: e.target.value 
-//                       }))}
-//                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//                       placeholder="Enter staff/driver name or ID"
-//                       required
-//                     />
-//                   </div>
-
-//                   {/* Payment Type */}
-//                   <div>
-//                     <label className="block text-sm font-medium text-gray-700 mb-2">
-//                       Payment Type *
-//                     </label>
-//                     <select
-//                       value={paymentForm.paymentType}
-//                       onChange={(e) => setPaymentForm(prev => ({ 
-//                         ...prev, 
-//                         paymentType: e.target.value as PaymentForm['paymentType']
-//                       }))}
-//                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//                       required
-//                     >
-//                       <option value="ADVANCE">Advance</option>
-//                       <option value="PARTIAL">Partial</option>
-//                       <option value="FINAL">Final</option>
-//                       <option value="REFUND">Refund</option>
-//                     </select>
-//                   </div>
-
-//                   {/* Payment Date and Time */}
-//                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//                     <div>
-//                       <label className="block text-sm font-medium text-gray-700 mb-2">
-//                         Payment Date *
-//                       </label>
-//                       <input
-//                         type="date"
-//                         value={paymentForm.paymentDate}
-//                         onChange={(e) => setPaymentForm(prev => ({ 
-//                           ...prev, 
-//                           paymentDate: e.target.value 
-//                         }))}
-//                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//                         required
-//                       />
-//                     </div>
-                    
-//                     <div>
-//                       <label className="block text-sm font-medium text-gray-700 mb-2">
-//                         Payment Time *
-//                       </label>
-//                       <input
-//                         type="time"
-//                         value={paymentForm.paymentTime}
-//                         onChange={(e) => setPaymentForm(prev => ({ 
-//                           ...prev, 
-//                           paymentTime: e.target.value 
-//                         }))}
-//                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//                         required
-//                       />
-//                     </div>
-//                   </div>
-
-//                   {/* Notes */}
-//                   <div>
-//                     <label className="block text-sm font-medium text-gray-700 mb-2">
-//                       Notes
-//                     </label>
-//                     <textarea
-//                       value={paymentForm.notes}
-//                       onChange={(e) => setPaymentForm(prev => ({ 
-//                         ...prev, 
-//                         notes: e.target.value 
-//                       }))}
-//                       rows={3}
-//                       maxLength={500}
-//                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//                       placeholder="Add any additional notes about the payment..."
-//                     />
-//                     <p className="text-xs text-gray-500 mt-1">
-//                       {paymentForm.notes.length}/500 characters
-//                     </p>
-//                   </div>
-
-//                   {/* Form Actions */}
-//                   <div className="flex justify-between space-x-3">
-//                     <button
-//                       type="button"
-//                       onClick={() => setShowPaymentForm(false)}
-//                       className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-//                     >
-//                       Cancel
-//                     </button>
-//                     <button
-//                       type="submit"
-//                       disabled={paymentLoading}
-//                       className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg flex items-center transition-colors"
-//                     >
-//                       {paymentLoading ? (
-//                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-//                       ) : (
-//                         <Save className="w-4 h-4 mr-2" />
-//                       )}
-//                       {paymentLoading ? 'Recording...' : 'Record Payment'}
-//                     </button>
-//                   </div>
-//                 </form>
-//               </div>
 //             )}
 //           </div>
 //         </div>
 //       )}
 
-//       {/* Confirmation Dialog */}
-//       {showConfirmDialog && modal && (
+//       {/* End Ride Dialog with Payment Collection */}
+//       {showEndRideDialog && modal && (
 //         <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50">
 //           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
 //             <div className="flex items-center mb-4">
-//               <AlertTriangle className="w-6 h-6 text-red-600 mr-3" />
-//               <h3 className="text-lg font-semibold text-gray-900">Confirm End Ride</h3>
+//               <StopCircle className="w-6 h-6 text-red-600 mr-3" />
+//               <h3 className="text-lg font-semibold text-gray-900">End Ride</h3>
 //             </div>
             
 //             <div className="mb-6">
-//               <p className="text-gray-600 mb-3">
-//                 Are you sure you want to end this ride?
+//               <p className="text-gray-600 mb-4">
+//                 Booking ID: <span className="font-medium">#{modal.bookingId}</span>
 //               </p>
               
-//               {modal.duePayment > 0 && (
-//                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
-//                   <p className="text-red-800 text-sm font-medium">
-//                     ⚠️ There is a pending amount of ₹{modal.duePayment.toFixed(2)}
-//                   </p>
+//               {modal.duePayment > 0 ? (
+//                 <div className="space-y-4">
+//                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+//                     <div className="flex items-center mb-2">
+//                       <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2" />
+//                       <span className="font-medium text-yellow-800">Payment Pending</span>
+//                     </div>
+//                     <p className="text-yellow-800 text-sm mb-3">
+//                       Due Amount: <span className="font-bold">₹{modal.duePayment.toFixed(2)}</span>
+//                     </p>
+                    
+//                     {/* Payment Received Checkbox */}
+//                     <div className="mb-4">
+//                       <label className="flex items-center">
+//                         <input
+//                           type="checkbox"
+//                           checked={finalPaymentForm.isPaymentReceived}
+//                           onChange={(e) => setFinalPaymentForm(prev => ({
+//                             ...prev,
+//                             isPaymentReceived: e.target.checked
+//                           }))}
+//                           className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+//                         />
+//                         <span className="text-sm font-medium text-gray-900">
+//                           Payment has been received
+//                         </span>
+//                       </label>
+//                     </div>
+                    
+//                     {/* Payment Details (only if payment received) */}
+//                     {finalPaymentForm.isPaymentReceived && (
+//                       <div className="space-y-3 border-t border-yellow-200 pt-3">
+//                         <div>
+//                           <label className="block text-sm font-medium text-gray-700 mb-1">
+//                             Payment Method
+//                           </label>
+//                           <select
+//                             value={finalPaymentForm.paymentMethod}
+//                             onChange={(e) => setFinalPaymentForm(prev => ({
+//                               ...prev,
+//                               paymentMethod: e.target.value as FinalPaymentForm['paymentMethod']
+//                             }))}
+//                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+//                           >
+//                             <option value="CASH">Cash</option>
+//                             <option value="CARD">Card</option>
+//                             <option value="UPI">UPI</option>
+//                             <option value="NET_BANKING">Net Banking</option>
+//                             <option value="OTHER">Other</option>
+//                           </select>
+//                         </div>
+                        
+//                         <div>
+//                           <label className="block text-sm font-medium text-gray-700 mb-1">
+//                             Received By
+//                           </label>
+//                           <input
+//                             type="text"
+//                             value={finalPaymentForm.receivedBy}
+//                             onChange={(e) => setFinalPaymentForm(prev => ({
+//                               ...prev,
+//                               receivedBy: e.target.value
+//                             }))}
+//                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+//                             placeholder="Driver name or staff ID"
+//                             required={finalPaymentForm.isPaymentReceived}
+//                           />
+//                         </div>
+//                       </div>
+//                     )}
+//                   </div>
+//                 </div>
+//               ) : (
+//                 <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+//                   <div className="flex items-center">
+//                     <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+//                     <span className="text-green-800 text-sm font-medium">
+//                       All payments completed
+//                     </span>
+//                   </div>
 //                 </div>
 //               )}
-              
-//               <p className="text-sm text-gray-500">
-//                 The driver and cab will become available for new bookings.
-//               </p>
 //             </div>
             
 //             <div className="flex justify-end space-x-3">
 //               <button
-//                 onClick={() => setShowConfirmDialog(false)}
+//                 onClick={() => setShowEndRideDialog(false)}
 //                 className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
 //               >
 //                 Cancel
 //               </button>
 //               <button
 //                 onClick={handleConfirmEndRide}
-//                 disabled={endRideLoading}
+//                 disabled={endRideLoading || (modal.duePayment > 0 && finalPaymentForm.isPaymentReceived && !finalPaymentForm.receivedBy)}
 //                 className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-lg flex items-center transition-colors"
 //               >
 //                 {endRideLoading ? (
@@ -796,7 +627,7 @@
 //                 ) : (
 //                   <StopCircle className="w-4 h-4 mr-2" />
 //                 )}
-//                 {endRideLoading ? 'Ending...' : 'End Ride'}
+//                 {endRideLoading ? 'Ending Ride...' : 'End Ride'}
 //               </button>
 //             </div>
 //           </div>
@@ -805,6 +636,7 @@
 //     </div>
 //   );
 // }
+
 'use client';
 import React, { useEffect, useState } from 'react';
 import { Car, Hash, Loader2, User, X, MapPin, Calendar, CreditCard, History, CheckCircle, StopCircle, AlertTriangle } from 'lucide-react';
@@ -907,7 +739,7 @@ export default function CurrentBookings() {
     
     // Reset the final payment form
     setFinalPaymentForm({
-      isPaymentReceived: modal.duePayment > 0 ? false : true, // If no due payment, mark as received
+      isPaymentReceived: Number(modal.duePayment) > 0 ? false : true, // If no due payment, mark as received
       paymentMethod: 'CASH',
       receivedBy: ''
     });
@@ -922,7 +754,7 @@ export default function CurrentBookings() {
     
     try {
       // If there's a due payment and it was received, record it first
-      if (modal.duePayment > 0 && finalPaymentForm.isPaymentReceived) {
+      if (Number(modal.duePayment) > 0 && finalPaymentForm.isPaymentReceived) {
         console.log('Recording final payment before ending ride...');
         
         const finalPaymentData = {
@@ -952,7 +784,7 @@ export default function CurrentBookings() {
         bookingId: modal.bookingId,
         driverId: modal.driverId,
         cabId: modal.cabId,
-        finalPaymentStatus: modal.duePayment > 0 ? 
+        finalPaymentStatus: Number(modal.duePayment) > 0 ? 
           (finalPaymentForm.isPaymentReceived ? 'COMPLETED' : 'PENDING') : 'COMPLETED'
       };
 
@@ -971,7 +803,7 @@ export default function CurrentBookings() {
         const updatedBookings = bookings.filter(b => b.bookingId !== modal.bookingId);
         setBookings(updatedBookings);
         
-        const paymentMessage = modal.duePayment > 0 ? 
+        const paymentMessage = Number(modal.duePayment) > 0 ? 
           (finalPaymentForm.isPaymentReceived ? 
             ' Final payment recorded.' : 
             ' Payment marked as pending.') : '';
@@ -1075,9 +907,9 @@ export default function CurrentBookings() {
                   </div>
 
                   {/* Due Payment Indicator */}
-                  {b.duePayment > 0 && (
+                  {Number(b.duePayment) > 0 && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-2">
-                      <span className="text-xs font-medium text-red-600">Due Amount: ₹{b.duePayment.toFixed(2)}</span>
+                      <span className="text-xs font-medium text-red-600">Due Amount: ₹{Number(b.duePayment).toFixed(2)}</span>
                     </div>
                   )}
                 </div>
@@ -1197,15 +1029,15 @@ export default function CurrentBookings() {
                   <div className="bg-gray-50 rounded-lg p-4 space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Total Amount:</span>
-                      <span className="font-bold text-black">₹{modal.totalAmount.toFixed(2)}</span>
+                      <span className="font-bold text-black">₹{Number(modal.totalAmount).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Advance Paid:</span>
-                      <span className="font-medium text-green-600">₹{modal.advancePayment.toFixed(2)}</span>
+                      <span className="font-medium text-green-600">₹{Number(modal.advancePayment).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Due Amount:</span>
-                      <span className="font-medium text-red-600">₹{modal.duePayment.toFixed(2)}</span>
+                      <span className="font-medium text-red-600">₹{Number(modal.duePayment).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -1265,11 +1097,11 @@ export default function CurrentBookings() {
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
                             <span className="text-gray-600">Amount Paid:</span>
-                            <p className="font-bold text-green-600">₹{payment.amountPaid.toFixed(2)}</p>
+                            <p className="font-bold text-green-600">₹{Number(payment.amountPaid).toFixed(2)}</p>
                           </div>
                           <div>
                             <span className="text-gray-600">Remaining:</span>
-                            <p className="font-medium">₹{payment.remainingAmount.toFixed(2)}</p>
+                            <p className="font-medium">₹{Number(payment.remainingAmount).toFixed(2)}</p>
                           </div>
                           <div>
                             <span className="text-gray-600">Method:</span>
@@ -1332,7 +1164,7 @@ export default function CurrentBookings() {
                 Booking ID: <span className="font-medium">#{modal.bookingId}</span>
               </p>
               
-              {modal.duePayment > 0 ? (
+              {Number(modal.duePayment) > 0 ? (
                 <div className="space-y-4">
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                     <div className="flex items-center mb-2">
@@ -1340,7 +1172,7 @@ export default function CurrentBookings() {
                       <span className="font-medium text-yellow-800">Payment Pending</span>
                     </div>
                     <p className="text-yellow-800 text-sm mb-3">
-                      Due Amount: <span className="font-bold">₹{modal.duePayment.toFixed(2)}</span>
+                      Due Amount: <span className="font-bold">₹{Number(modal.duePayment).toFixed(2)}</span>
                     </p>
                     
                     {/* Payment Received Checkbox */}
@@ -1374,7 +1206,7 @@ export default function CurrentBookings() {
                               ...prev,
                               paymentMethod: e.target.value as FinalPaymentForm['paymentMethod']
                             }))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            className="text-black w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                           >
                             <option value="CASH">Cash</option>
                             <option value="CARD">Card</option>
@@ -1395,7 +1227,7 @@ export default function CurrentBookings() {
                               ...prev,
                               receivedBy: e.target.value
                             }))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            className="text-black w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                             placeholder="Driver name or staff ID"
                             required={finalPaymentForm.isPaymentReceived}
                           />
@@ -1425,7 +1257,7 @@ export default function CurrentBookings() {
               </button>
               <button
                 onClick={handleConfirmEndRide}
-                disabled={endRideLoading || (modal.duePayment > 0 && finalPaymentForm.isPaymentReceived && !finalPaymentForm.receivedBy)}
+                disabled={endRideLoading || (Number(modal.duePayment) > 0 && finalPaymentForm.isPaymentReceived && !finalPaymentForm.receivedBy)}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-lg flex items-center transition-colors"
               >
                 {endRideLoading ? (

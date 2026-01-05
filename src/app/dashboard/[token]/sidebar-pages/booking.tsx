@@ -816,7 +816,7 @@ const CabBookingInterface: React.FC = () => {
                     <MapPin className={`w-8 h-8 mx-auto mb-3 ${
                       bookingType === 'LOCATION' ? 'text-blue-600' : 'text-gray-500'
                     }`} />
-                    <h3 className="font-semibold text-lg mb-2">Location Based</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-black">Location Based</h3>
                     <p className="text-sm text-gray-600">
                       Book for specific pickup and drop locations
                     </p>
@@ -833,7 +833,7 @@ const CabBookingInterface: React.FC = () => {
                     <Clock className={`w-8 h-8 mx-auto mb-3 ${
                       bookingType === 'DURATION' ? 'text-blue-600' : 'text-gray-500'
                     }`} />
-                    <h3 className="font-semibold text-lg mb-2">Duration Based</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-black">Duration Based</h3>
                     <p className="text-sm text-gray-600">
                       Book for a specific time duration
                     </p>
@@ -951,7 +951,7 @@ const CabBookingInterface: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* drivers */}
               <div className="bg-white rounded-xl shadow p-6">
-                <h2 className="text-xl font-semibold flex items-center mb-4">
+                <h2 className="text-xl font-semibold flex items-center mb-4 text-purple-600">
                   <User className="mr-2 text-purple-600" />
                   Available Drivers ({availableDrivers.length})
                 </h2>
@@ -988,7 +988,7 @@ const CabBookingInterface: React.FC = () => {
 
               {/* cabs */}
               <div className="bg-white rounded-xl shadow p-6">
-                <h2 className="text-xl font-semibold flex items-center mb-4">
+                <h2 className="text-xl font-semibold flex items-center mb-4 text-green-600">
                   <Car className="mr-2 text-green-600" />
                   Available Cabs ({availableCabs.length})
                 </h2>
@@ -1243,19 +1243,19 @@ const CabBookingInterface: React.FC = () => {
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <span className="text-green-600">Amount: </span>
-                          <span className="font-medium">₹{paymentData.amountPaid}</span>
+                          <span className="font-medium text-black">₹{paymentData.amountPaid}</span>
                         </div>
                         <div>
                           <span className="text-green-600">Method: </span>
-                          <span className="font-medium">{paymentData.paymentMethod}</span>
+                          <span className="font-medium text-black">{paymentData.paymentMethod}</span>
                         </div>
                         <div>
                           <span className="text-green-600">Type: </span>
-                          <span className="font-medium">{paymentData.paymentType}</span>
+                          <span className="font-medium text-black">{paymentData.paymentType}</span>
                         </div>
                         <div>
                           <span className="text-green-600">Received By: </span>
-                          <span className="font-medium">{paymentData.receivedBy || 'Not specified'}</span>
+                          <span className="font-medium text-black">{paymentData.receivedBy || 'Not specified'}</span>
                         </div>
                       </div>
                     </div>
@@ -1351,7 +1351,7 @@ const CabBookingInterface: React.FC = () => {
                   step="0.01"
                   value={paymentData.amountPaid}
                   onChange={handlePaymentDialogChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                   placeholder="0.00"
                   required
                 />
@@ -1366,7 +1366,7 @@ const CabBookingInterface: React.FC = () => {
                   name="paymentMethod"
                   value={paymentData.paymentMethod}
                   onChange={handlePaymentDialogChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                   required
                 >
                   <option value="CASH">Cash</option>
@@ -1387,7 +1387,7 @@ const CabBookingInterface: React.FC = () => {
                   name="receivedBy"
                   value={paymentData.receivedBy}
                   onChange={handlePaymentDialogChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="text-black w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter staff/driver name or ID"
                   required
                 />
@@ -1402,7 +1402,7 @@ const CabBookingInterface: React.FC = () => {
                   name="paymentType"
                   value={paymentData.paymentType}
                   onChange={handlePaymentDialogChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="text-black w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 >
                   <option value="ADVANCE">Advance</option>
@@ -1423,7 +1423,7 @@ const CabBookingInterface: React.FC = () => {
                     name="paymentDate"
                     value={paymentData.paymentDate}
                     onChange={handlePaymentDialogChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="text-black w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
@@ -1437,7 +1437,7 @@ const CabBookingInterface: React.FC = () => {
                     name="paymentTime"
                     value={paymentData.paymentTime}
                     onChange={handlePaymentDialogChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="text-black w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
@@ -1454,7 +1454,7 @@ const CabBookingInterface: React.FC = () => {
                   onChange={handlePaymentDialogChange}
                   rows={3}
                   maxLength={500}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="text-black w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Add any additional notes about the payment..."
                 />
                 <p className="text-xs text-gray-500 mt-1">
