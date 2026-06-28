@@ -1,0 +1,16 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        - MONGO_URI=${MONGO_URI}
+    ports:
+      - "3000:3000"
+    # This tells Docker Compose to load .env.local instead of the default .env
+    env_file:
+      - .env.local 
+    environment:
+      - MONGO_URI=${MONGO_URI}
+
+# When you run a standard docker-compose up, Docker looks for a file exactly named .env in your folder to fill in the "blanks" (the ${VARIABLE} parts) in your YAML file. 
+# Since you are using .env.local, Docker Compose effectively sees those values as empty—which is why your build failed earlier. The --env-file .env.local flag is essentially a GPS for your variables. 
