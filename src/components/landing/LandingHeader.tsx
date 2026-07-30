@@ -318,14 +318,17 @@ export default function LandingHeader() {
     router.push("/");
   };
 
+  // TEMP: open dashboard without login. Restore Login CTA + real auth later.
+  const TEMP_DASHBOARD_TOKEN = "demo";
+
   const handleDashboard = () => {
-    const token = sessionStorage.getItem("loginToken");
+    const token = sessionStorage.getItem("loginToken") || TEMP_DASHBOARD_TOKEN;
+    // Satisfy existing client-side auth checks without removing them
+    sessionStorage.setItem("fromLogin", "true");
+    sessionStorage.setItem("loginToken", token);
     setShowDropdown(false);
-    if (token) {
-      router.push(`/dashboard/${token}`);
-    } else {
-      router.push("/dashboard");
-    }
+    setIsMobileMenuOpen(false);
+    router.push(`/dashboard/${token}`);
   };
 
   const handleUserIconClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -413,14 +416,15 @@ export default function LandingHeader() {
                   ))}
                 </div>
 
-                {/* Login Button / User Dropdown area */}
+                {/* Dashboard Button / User Dropdown area */}
+                {/* Login modal kept below for later — CTA temporarily opens dashboard directly */}
                 <div className="hidden lg:flex items-center space-x-4">
                   {!isLoggedIn ? (
                     <button
-                      onClick={() => setShowModal(true)}
+                      onClick={handleDashboard}
                       className="bg-amber-600 hover:bg-gray-800 text-white px-5 py-2 rounded-full font-semibold transition-all duration-300"
                     >
-                      Login
+                      Dashboard
                     </button>
                   ) : (
                     <div className="relative">
@@ -515,10 +519,10 @@ export default function LandingHeader() {
               ))}
               {!isLoggedIn ? (
                 <button
-                  onClick={() => setShowModal(true)}
+                  onClick={handleDashboard}
                   className="bg-gray-900 hover:bg-gray-800 text-white block px-3 py-2 rounded-md text-base font-medium text-center w-full"
                 >
-                  Login
+                  Dashboard
                 </button>
               ) : (
                 <div className="space-y-2">
